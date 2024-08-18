@@ -9,3 +9,7 @@ An example of how to use the `FileReader` and other `web-sys` api in `leptos`.
 ## Best Practices
 
 This example just unwraps everything. You should not do that in a production app.
+
+## Example
+
+![Displaying the source code](/example.png "showing the source code in the brower")
