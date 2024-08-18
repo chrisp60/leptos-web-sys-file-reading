@@ -1,6 +1,5 @@
 use leptos::*;
 use wasm_bindgen::{prelude::Closure, JsCast, UnwrapThrowExt};
-use wasm_bindgen_futures::wasm_bindgen;
 use web_sys::{window, Element, FileReader, HtmlInputElement};
 
 const INPUT_ID: &str = "fileInput";
@@ -30,7 +29,7 @@ struct UploadSignal(RwSignal<Vec<Upload>>);
 #[component]
 fn App() -> impl IntoView {
     let signal = UploadSignal::default();
-    provide_context(signal.clone());
+    provide_context(signal);
     let UploadSignal(file_list) = signal;
     view! {
       <h1>"File Reader"</h1>
