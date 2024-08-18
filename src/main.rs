@@ -29,8 +29,9 @@ struct UploadSignal(RwSignal<Vec<Upload>>);
 #[component]
 fn App() -> impl IntoView {
     let signal = UploadSignal::default();
+    // Just using context here because it is convenient. Passing props
+    // around is fine as well.
     provide_context(signal);
-    let UploadSignal(file_list) = signal;
     view! {
       <h1>"File Reader"</h1>
       <p>
@@ -45,7 +46,7 @@ fn App() -> impl IntoView {
       </p>
       <input type="file" id=INPUT_ID on:change=from_input multiple required/>
       <button on:click=move |_| {
-          file_list.update(Vec::clear)
+          signal.0.update(Vec::clear)
       }>"Clear List"</button>
       <hr/>
       <Results/>
@@ -57,7 +58,7 @@ fn from_input(_: ev::Event) {
         .and_then(|e| e.dyn_into::<HtmlInputElement>().ok())
         .unwrap_throw();
     let UploadSignal(file_signal) = expect_context();
-    file_signal.update(Vec::clear);
+    file_signal.update(Vec::clear); // Clear list from previous change
     let files = input.files().unwrap_throw();
     let mut index = 0;
 
