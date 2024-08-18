@@ -65,6 +65,12 @@ fn from_input(_: ev::Event) {
         let reader = FileReader::new().unwrap_throw();
         let cloned = reader.clone();
         let name = file.name();
+        // We can use `Closure::once_into_js` because this handler only needs to exist
+        // for one invocation (in response to the one loadend event dispatched by the
+        // `FileReader`).
+        //
+        // This invariant allows `web_sys` to deallocate (drop) the closure for us after
+        // that call has completed.
         let read_file = Closure::once_into_js(move |_: ev::ProgressEvent| {
             let result = cloned.result().unwrap_throw();
             let content = result.as_string().unwrap_throw();
