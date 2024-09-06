@@ -78,6 +78,7 @@ fn from_input(_: ev::Event) {
                 // https://developer.mozilla.org/en-US/docs/Web/API/FileReader/result
                 let result = reader.result().unwrap_throw();
                 let vec_of_u8_bytes = Uint8Array::new(&result).to_vec();
+                // Do whatever you want with the Vec<u8>
                 let content = String::from_utf8(vec_of_u8_bytes).unwrap_throw();
                 file_signal.update(|items| items.push(Upload { name, content }))
             })
