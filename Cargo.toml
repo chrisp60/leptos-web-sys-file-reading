@@ -7,14 +7,16 @@ edition = "2021"
 [dependencies]
 console_error_panic_hook = "0.1.7"
 console_log = "1.0.0"
+js-sys = "0.3.70"
 leptos = { version = "0.6.14", features = ["csr", "nightly"] }
 wasm-bindgen = "0.2.93"
 web-sys = { version = "0.3.70", features = [
-    "File",
-    "FileList",
-    "FileReader",
-    "HtmlInputElement",
-    "Document",
-    "Window",
-    "console",
+  "File",
+  "FileList",
+  "FileReader",
+  "HtmlInputElement",
+  "Document",
+  "Window",
+  "console",
+  "Blob",
 ] }

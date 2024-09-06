@@ -1,3 +1,4 @@
+use js_sys::Uint8Array;
 use leptos::*;
 use wasm_bindgen::{prelude::Closure, JsCast, UnwrapThrowExt};
 use web_sys::{window, Element, FileReader, HtmlInputElement};
@@ -75,11 +76,20 @@ fn from_input(_: ev::Event) {
             // FileReader
             // https://developer.mozilla.org/en-US/docs/Web/API/FileReader/result
             let result = cloned.result().unwrap_throw();
-            let content = result.as_string().unwrap_throw();
+            let array = Uint8Array::new(&result).to_vec();
+            let content = String::from_utf8(array).unwrap_throw();
             file_signal.update(|items| items.push(Upload { name, content }))
         });
         reader.set_onloadend(Some(read_file.as_ref().unchecked_ref()));
-        reader.read_as_text(&file).unwrap_throw();
+
+        // read_as_array_buffer takes a &Blob
+        //
+        // Per https://w3c.github.io/FileAPI/#file-section
+        // > A File object is a Blob object with a name attribute..
+        //
+        // File is a subclass (inherits) from the Blob interface, so a File
+        // can be used anywhere a Blob is required.
+        reader.read_as_array_buffer(&file).unwrap_throw();
 
         index += 1;
     }
