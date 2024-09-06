@@ -65,21 +65,23 @@ fn from_input(_: ev::Event) {
 
     while let Some(file) = files.get(index) {
         let reader = FileReader::new().unwrap_throw();
-        let cloned = reader.clone();
         let name = file.name();
 
         // This closure only needs to be called a single time as we will just
         // remake it on each loop
         // * web_sys drops it for us when using this specific constructor
-        let read_file = Closure::once_into_js(move |_: ev::ProgressEvent| {
-            // `.result` is only valid after the `read_*` operation is complete on the
-            // FileReader
-            // https://developer.mozilla.org/en-US/docs/Web/API/FileReader/result
-            let result = cloned.result().unwrap_throw();
-            let array = Uint8Array::new(&result).to_vec();
-            let content = String::from_utf8(array).unwrap_throw();
-            file_signal.update(|items| items.push(Upload { name, content }))
-        });
+        let read_file = {
+            // FileReader is cloned prior to moving into the closure
+            let reader = reader.to_owned();
+            Closure::once_into_js(move |_: ev::ProgressEvent| {
+                // `.result` valid after the `read_*` completes on FileReader
+                // https://developer.mozilla.org/en-US/docs/Web/API/FileReader/result
+                let result = reader.result().unwrap_throw();
+                let vec_of_u8_bytes = Uint8Array::new(&result).to_vec();
+                let content = String::from_utf8(vec_of_u8_bytes).unwrap_throw();
+                file_signal.update(|items| items.push(Upload { name, content }))
+            })
+        };
         reader.set_onloadend(Some(read_file.as_ref().unchecked_ref()));
 
         // read_as_array_buffer takes a &Blob
@@ -90,6 +92,20 @@ fn from_input(_: ev::Event) {
         // File is a subclass (inherits) from the Blob interface, so a File
         // can be used anywhere a Blob is required.
         reader.read_as_array_buffer(&file).unwrap_throw();
+
+        // You can also use `.read_as_text(&file)` instead if you just want a string.
+        // This example shows how to extract an array buffer as it is more flexible
+        //
+        // If you use `.read_as_text` change the closure from ...
+        //
+        // let result = reader.result().unwrap_throw();
+        // let vec_of_u8_bytes = Uint8Array::new(&result).to_vec();
+        // let content = String::from_utf8(vec_of_u8_bytes).unwrap_throw();
+        //
+        // to ...
+        //
+        // let result = reader.result().unwrap_throw();
+        // let content = result.as_string().unwrap_throw();
 
         index += 1;
     }
@@ -105,7 +121,7 @@ fn Results() -> impl IntoView {
             .map(|Upload { name, content }| {
                 view! {
                   <tr>
-                    <td>{name}</td>
+                    <td style="vertical-align: top;">{name}</td>
                     <td>
                       <pre>{content}</pre>
                     </td>
